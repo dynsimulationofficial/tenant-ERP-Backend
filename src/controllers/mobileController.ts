@@ -13,7 +13,7 @@ import { InvoiceModel } from '../models/invoiceModel';
 import { PurchaseOrderModel } from '../models/purchaseOrderModel';
 import { AuthRequest } from '../middleware/authMiddleware';
 import { generateTOTPSecret, generateQRCodeDataURL, verifyTOTPCode } from '../utils/totp';
-import { generatePDFStream } from '../utils/pdfGenerator.ts';
+import { generatePDFStream } from '../utils/pdfGenerator';
 import { Role } from '@prisma/client';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'tenant_erp_super_secret_jwt_key_2026';
