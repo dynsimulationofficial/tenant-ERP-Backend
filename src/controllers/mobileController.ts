@@ -556,6 +556,17 @@ export async function mobileCreateEstimate(req: AuthRequest, res: Response) {
 
     const { clientId, estimateNumber, issueDate, expiryDate, notes, items } = req.body;
 
+    if (!clientId) {
+      return res.status(400).json({ error: 'clientId is required. Please select or create a client first.' });
+    }
+
+    const clientExists = await prisma.client.findFirst({ where: { id: clientId, companyId } });
+    if (!clientExists) {
+      return res.status(400).json({
+        error: `Client with ID "${clientId}" does not exist for this tenant. Please specify a valid clientId from GET /api/mobile/clients or create a new client.`,
+      });
+    }
+
     let subtotal = 0;
     let taxAmount = 0;
 
@@ -669,6 +680,17 @@ export async function mobileCreateProformaInvoice(req: AuthRequest, res: Respons
 
     const { clientId, estimateId, piNumber, issueDate, dueDate, notes, items } = req.body;
 
+    if (!clientId) {
+      return res.status(400).json({ error: 'clientId is required. Please select or create a client first.' });
+    }
+
+    const clientExists = await prisma.client.findFirst({ where: { id: clientId, companyId } });
+    if (!clientExists) {
+      return res.status(400).json({
+        error: `Client with ID "${clientId}" does not exist for this tenant. Please specify a valid clientId from GET /api/mobile/clients or create a new client.`,
+      });
+    }
+
     let subtotal = 0;
     let taxAmount = 0;
 
@@ -770,6 +792,17 @@ export async function mobileCreateInvoice(req: AuthRequest, res: Response) {
     if (!companyId) return res.status(400).json({ error: 'Tenant context required' });
 
     const { clientId, estimateId, proformaId, invoiceNumber, issueDate, dueDate, notes, items, paymentMethod } = req.body;
+
+    if (!clientId) {
+      return res.status(400).json({ error: 'clientId is required. Please select or create a client first.' });
+    }
+
+    const clientExists = await prisma.client.findFirst({ where: { id: clientId, companyId } });
+    if (!clientExists) {
+      return res.status(400).json({
+        error: `Client with ID "${clientId}" does not exist for this tenant. Please specify a valid clientId from GET /api/mobile/clients or create a new client.`,
+      });
+    }
 
     let subtotal = 0;
     let taxAmount = 0;
@@ -877,6 +910,17 @@ export async function mobileCreatePurchaseOrder(req: AuthRequest, res: Response)
     if (!companyId) return res.status(400).json({ error: 'Tenant context required' });
 
     const { vendorId, poNumber, issueDate, expectedDate, notes, items } = req.body;
+
+    if (!vendorId) {
+      return res.status(400).json({ error: 'vendorId is required. Please select or create a vendor first.' });
+    }
+
+    const vendorExists = await prisma.vendor.findFirst({ where: { id: vendorId, companyId } });
+    if (!vendorExists) {
+      return res.status(400).json({
+        error: `Vendor with ID "${vendorId}" does not exist for this tenant. Please specify a valid vendorId from GET /api/mobile/vendors or create a new vendor.`,
+      });
+    }
 
     let subtotal = 0;
     let taxAmount = 0;

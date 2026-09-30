@@ -2,6 +2,7 @@ import { Router } from 'express';
 import {
   getEstimates,
   getEstimateById,
+  getEstimatePDF,
   createEstimate,
   convertEstimateToProforma,
   convertEstimateToInvoice,
@@ -15,6 +16,7 @@ router.use(requireAuth as any);
 
 router.get('/', getEstimates);
 router.get('/:id', getEstimateById);
+router.get('/:id/pdf', getEstimatePDF);
 router.post('/', createEstimate);
 router.post('/:id/convert-proforma', convertEstimateToProforma);
 router.post('/:id/convert-invoice', convertEstimateToInvoice);
