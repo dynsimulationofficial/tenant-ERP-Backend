@@ -1,6 +1,9 @@
 import { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import multer from 'multer';
+import path from 'path';
+import fs from 'fs';
 import { prisma } from '../config/db';
 import { UserModel } from '../models/userModel';
 import { CompanyModel } from '../models/companyModel';
@@ -18,6 +21,34 @@ import { Role } from '@prisma/client';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'tenant_erp_super_secret_jwt_key_2026';
 
+const uploadsDir = path.join(__dirname, '../../uploads');
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, uploadsDir);
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+    const ext = path.extname(file.originalname) || '.png';
+    cb(null, `logo-${uniqueSuffix}${ext}`);
+  },
+});
+
+export const uploadLogoMulter = multer({
+  storage,
+  limits: { fileSize: 10 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype.startsWith('image/') || file.originalname.toLowerCase().endsWith('.ico')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only image files (PNG, JPG, JPEG, WEBP, SVG, ICO) are allowed'));
+    }
+  },
+});
+
 /**
  * ============================================================================
  * MOBILE AUTHENTICATION CONTROLLERS
@@ -26,7 +57,25 @@ const JWT_SECRET = process.env.JWT_SECRET || 'tenant_erp_super_secret_jwt_key_20
 
 export async function mobileRegister(req: Request, res: Response) {
   try {
-    const { companyName, name, email, password, currency } = req.body;
+    const {
+      companyName,
+      legalName,
+      companyEmail,
+      name,
+      email,
+      password,
+      currency,
+      phone,
+      website,
+      address,
+      taxId,
+      logoUrl,
+      bankName,
+      accountName,
+      accountNumber,
+      routingNumber,
+      branchName,
+    } = req.body;
 
     if (!companyName || !name || !email || !password) {
       return res.status(400).json({ error: 'Company Name, User Name, Email, and Password are required' });
@@ -40,7 +89,19 @@ export async function mobileRegister(req: Request, res: Response) {
     // 1. Create Tenant Company
     const company = await CompanyModel.create({
       name: companyName,
+      legalName,
+      email: companyEmail || email,
+      phone,
+      website,
+      address,
+      taxId,
+      logoUrl,
       currency: currency || 'USD',
+      bankName,
+      accountName,
+      accountNumber,
+      routingNumber,
+      branchName,
     });
 
     // 2. Hash Password & Create Admin User
@@ -199,6 +260,118 @@ export async function mobileGetMe(req: AuthRequest, res: Response) {
       user: userWithoutPassword,
       tenantId: req.tenantId,
       company,
+    });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+}
+
+export async function mobileGetCompany(req: AuthRequest, res: Response) {
+  try {
+    const companyId = req.tenantId;
+    if (!companyId) return res.status(400).json({ error: 'Tenant context required' });
+
+    const company = await CompanyModel.findById(companyId);
+    if (!company) return res.status(404).json({ error: 'Company workspace not found' });
+
+    res.json(company);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+}
+
+export async function mobileUpdateCompany(req: AuthRequest, res: Response) {
+  try {
+    const companyId = req.tenantId;
+    if (!companyId) return res.status(400).json({ error: 'Tenant context required' });
+
+    const {
+      name,
+      legalName,
+      email,
+      phone,
+      website,
+      address,
+      taxId,
+      logoUrl,
+      currency,
+      bankName,
+      accountName,
+      accountNumber,
+      routingNumber,
+      branchName,
+    } = req.body;
+
+    const updateData: any = {};
+    if (name !== undefined) updateData.name = name;
+    if (legalName !== undefined) updateData.legalName = legalName;
+    if (email !== undefined) updateData.email = email;
+    if (phone !== undefined) updateData.phone = phone;
+    if (website !== undefined) updateData.website = website;
+    if (address !== undefined) updateData.address = address;
+    if (taxId !== undefined) updateData.taxId = taxId;
+    if (currency !== undefined) updateData.currency = currency;
+    if (bankName !== undefined) updateData.bankName = bankName;
+    if (accountName !== undefined) updateData.accountName = accountName;
+    if (accountNumber !== undefined) updateData.accountNumber = accountNumber;
+    if (routingNumber !== undefined) updateData.routingNumber = routingNumber;
+    if (branchName !== undefined) updateData.branchName = branchName;
+
+    // Handle base64 image data URL if passed directly in logoUrl
+    if (logoUrl) {
+      if (logoUrl.startsWith('data:image/')) {
+        const matches = logoUrl.match(/^data:image\/([a-zA-Z0-9+.=]+);base64,(.+)$/);
+        if (matches) {
+          const rawExt = matches[1].split('+')[0];
+          const ext = rawExt === 'jpeg' ? 'jpg' : rawExt;
+          const base64Data = matches[2];
+          const filename = `logo-${companyId}-${Date.now()}.${ext}`;
+          const filePath = path.join(uploadsDir, filename);
+
+          fs.writeFileSync(filePath, Buffer.from(base64Data, 'base64'));
+
+          const host = req.get('host') || 'localhost:2000';
+          const protocol = req.protocol === 'https' || req.get('x-forwarded-proto') === 'https' ? 'https' : 'http';
+          updateData.logoUrl = `${protocol}://${host}/uploads/${filename}`;
+        } else {
+          updateData.logoUrl = logoUrl;
+        }
+      } else {
+        updateData.logoUrl = logoUrl;
+      }
+    }
+
+    const updatedCompany = await CompanyModel.updateProfile(companyId, updateData);
+    res.json({
+      company: updatedCompany,
+      message: 'Company profile and logo updated successfully',
+    });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+}
+
+export async function mobileUploadCompanyLogo(req: AuthRequest, res: Response) {
+  try {
+    const companyId = req.tenantId;
+    if (!companyId) return res.status(400).json({ error: 'Tenant context required' });
+
+    if (!req.file) {
+      return res.status(400).json({
+        error: 'Please select an image file to upload. Use form-data with key "logo" or "file".',
+      });
+    }
+
+    const host = req.get('host') || 'localhost:2000';
+    const protocol = req.protocol === 'https' || req.get('x-forwarded-proto') === 'https' ? 'https' : 'http';
+    const logoUrl = `${protocol}://${host}/uploads/${req.file.filename}`;
+
+    const updatedCompany = await CompanyModel.updateProfile(companyId, { logoUrl });
+
+    res.json({
+      logoUrl,
+      company: updatedCompany,
+      message: 'Company logo image uploaded and set as primary logo successfully',
     });
   } catch (err: any) {
     res.status(500).json({ error: err.message });

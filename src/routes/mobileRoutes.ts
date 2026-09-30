@@ -6,6 +6,10 @@ import {
   mobileLogin,
   mobileVerify2FA,
   mobileGetMe,
+  mobileGetCompany,
+  mobileUpdateCompany,
+  mobileUploadCompanyLogo,
+  uploadLogoMulter,
   // Mobile Dashboard
   mobileGetDashboard,
   // Mobile Team & Users
@@ -76,6 +80,9 @@ router.use(requireAuth as any);
 
 // User & Tenant Context
 router.get('/auth/me', mobileGetMe);
+router.get('/company', mobileGetCompany);
+router.put('/company', mobileUpdateCompany);
+router.post('/company/upload-logo', uploadLogoMulter.single('logo'), mobileUploadCompanyLogo);
 router.get('/dashboard', mobileGetDashboard);
 
 // Team & User Management

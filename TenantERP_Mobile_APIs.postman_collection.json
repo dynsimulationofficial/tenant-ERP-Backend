@@ -1,0 +1,1755 @@
+{
+  "info": {
+    "_postman_id": "tenanterp-mobile-collection-v2.3",
+    "name": "TenantERP Mobile App APIs",
+    "description": "Official Mobile App API Collection for TenantERP Express MVC Backend",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "https://tenant-erp-staging-backend.dynsimulation.com/api/mobile",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "tenant_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "client_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "vendor_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "estimate_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "proforma_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "invoice_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "po_id",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "01 - Mobile Auth & Workspace",
+      "item": [
+        {
+          "name": "Mobile Register New Tenant Company & Admin User (With Logo & Profile)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"companyName\": \"Acme Global Logistics\",\n  \"legalName\": \"Acme Global Logistics Pvt. Ltd.\",\n  \"companyEmail\": \"billing@acmeglobal.com\",\n  \"phone\": \"+1 (555) 234-5678\",\n  \"website\": \"https://acmeglobal.com\",\n  \"address\": \"100 Innovation Way, Suite 400, Tech Park, NY 10001\",\n  \"taxId\": \"US-EIN-987654321\",\n  \"logoUrl\": \"https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=200&h=80&fit=crop\",\n  \"currency\": \"USD\",\n  \"bankName\": \"Silicon Valley Commercial Bank\",\n  \"accountName\": \"Acme Operations\",\n  \"accountNumber\": \"9876543210123\",\n  \"routingNumber\": \"SVCB0001234\",\n  \"branchName\": \"Manhattan Wall St Branch\",\n  \"name\": \"John Doe Admin\",\n  \"email\": \"admin@acmeglobal.com\",\n  \"password\": \"admin123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/register",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "register"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.token) pm.environment.set(\"token\", res.token);",
+                  "if (res.tenantId) pm.environment.set(\"tenant_id\", res.tenantId);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Mobile Direct Login (Email & Password)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@acmeglobal.com\",\n  \"password\": \"admin123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.token) pm.environment.set(\"token\", res.token);",
+                  "if (res.tenantId) pm.environment.set(\"tenant_id\", res.tenantId);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Mobile User Profile & Tenant Details",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              },
+              {
+                "key": "x-tenant-id",
+                "value": "{{tenant_id}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/me",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "me"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Company Workspace Profile & Logo",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              },
+              {
+                "key": "x-tenant-id",
+                "value": "{{tenant_id}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/company",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "company"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Company Details & Logo (JSON / Base64)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              },
+              {
+                "key": "x-tenant-id",
+                "value": "{{tenant_id}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Acme Global Logistics Inc.\",\n  \"legalName\": \"Acme Global Logistics International Corp.\",\n  \"email\": \"billing@acmeglobal.com\",\n  \"phone\": \"+1 (555) 999-8877\",\n  \"website\": \"https://acmeglobal.com\",\n  \"address\": \"500 Madison Avenue, 15th Floor, New York, NY 10022\",\n  \"taxId\": \"US-EIN-987654321\",\n  \"logoUrl\": \"https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=200&h=80&fit=crop\",\n  \"currency\": \"USD\",\n  \"bankName\": \"JPMorgan Chase Bank\",\n  \"accountName\": \"Acme Global Operating Account\",\n  \"accountNumber\": \"445566778899\",\n  \"routingNumber\": \"CHASUS33XXX\",\n  \"branchName\": \"New York Wall St\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/company",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "company"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Upload Company Logo Image File (form-data)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              },
+              {
+                "key": "x-tenant-id",
+                "value": "{{tenant_id}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "logo",
+                  "type": "file",
+                  "src": [],
+                  "description": "Select PNG / JPG / JPEG image file from your computer"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/company/upload-logo",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "company",
+                "upload-logo"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "02 - Mobile Dashboard",
+      "item": [
+        {
+          "name": "Get Mobile Dashboard Stats & Recent Activity",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              },
+              {
+                "key": "x-tenant-id",
+                "value": "{{tenant_id}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/dashboard",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "dashboard"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "03 - Mobile Users & Team",
+      "item": [
+        {
+          "name": "Get List Users & Team",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              },
+              {
+                "key": "x-tenant-id",
+                "value": "{{tenant_id}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/users",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "users"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              },
+              {
+                "key": "x-tenant-id",
+                "value": "{{tenant_id}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Staff Member\",\n  \"email\": \"staff@acmeglobal.com\",\n  \"password\": \"admin123\",\n  \"role\": \"STAFF\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/users",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "users"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete User",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              },
+              {
+                "key": "x-tenant-id",
+                "value": "{{tenant_id}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/users/:id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "users",
+                ":id"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "04 - Mobile Clients",
+      "item": [
+        {
+          "name": "List Clients",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              },
+              {
+                "key": "x-tenant-id",
+                "value": "{{tenant_id}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/clients",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "clients"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (Array.isArray(res) && res.length > 0) pm.environment.set(\"client_id\", res[0].id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create Client",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              },
+              {
+                "key": "x-tenant-id",
+                "value": "{{tenant_id}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Starlight Tech Solutions\",\n  \"contactPerson\": \"Alice Vance\",\n  \"email\": \"alice@starlighttech.com\",\n  \"phone\": \"+1 (555) 444-1212\",\n  \"taxId\": \"TAX-ST-9911\",\n  \"currency\": \"USD\",\n  \"billingAddress\": \"789 Enterprise Blvd, Austin, TX 78701\",\n  \"shippingAddress\": \"789 Enterprise Blvd, Warehouse B, Austin, TX 78701\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/clients",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "clients"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.id) pm.environment.set(\"client_id\", res.id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Delete Client",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              },
+              {
+                "key": "x-tenant-id",
+                "value": "{{tenant_id}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/clients/:id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "clients",
+                ":id"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "05 - Mobile Vendors",
+      "item": [
+        {
+          "name": "List Vendors",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              },
+              {
+                "key": "x-tenant-id",
+                "value": "{{tenant_id}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/vendors",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "vendors"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (Array.isArray(res) && res.length > 0) pm.environment.set(\"vendor_id\", res[0].id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create Vendor",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              },
+              {
+                "key": "x-tenant-id",
+                "value": "{{tenant_id}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Oceanic Freight Systems\",\n  \"contactPerson\": \"Marcus Brody\",\n  \"email\": \"sales@oceanicfreight.com\",\n  \"phone\": \"+1 (555) 888-2233\",\n  \"taxId\": \"VEND-OF-3321\",\n  \"currency\": \"USD\",\n  \"address\": \"50 Deepwater Port Road, Seattle, WA 98101\",\n  \"paymentTerms\": \"Net 30\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/vendors",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "vendors"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.id) pm.environment.set(\"vendor_id\", res.id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Delete Vendor",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              },
+              {
+                "key": "x-tenant-id",
+                "value": "{{tenant_id}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/vendors/:id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "vendors",
+                ":id"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "06 - Mobile Items",
+      "item": [
+        {
+          "name": "List Items",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              },
+              {
+                "key": "x-tenant-id",
+                "value": "{{tenant_id}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/items",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "items"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Item",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              },
+              {
+                "key": "x-tenant-id",
+                "value": "{{tenant_id}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Enterprise Server Installation\",\n  \"sku\": \"SRV-ENT-001\",\n  \"type\": \"SERVICE\",\n  \"unitPrice\": 2500.0,\n  \"taxRate\": 10.0,\n  \"description\": \"On-site enterprise server deployment\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/items",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "items"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete Item",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              },
+              {
+                "key": "x-tenant-id",
+                "value": "{{tenant_id}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/items/:id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "items",
+                ":id"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "07 - Mobile Estimates",
+      "item": [
+        {
+          "name": "List Estimates",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              },
+              {
+                "key": "x-tenant-id",
+                "value": "{{tenant_id}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/estimates",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "estimates"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (Array.isArray(res) && res.length > 0) pm.environment.set(\"estimate_id\", res[0].id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Estimate Details",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              },
+              {
+                "key": "x-tenant-id",
+                "value": "{{tenant_id}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/estimates/{{estimate_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "estimates",
+                "{{estimate_id}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Download / Open Estimate PDF",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              },
+              {
+                "key": "x-tenant-id",
+                "value": "{{tenant_id}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/estimates/{{estimate_id}}/pdf",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "estimates",
+                "{{estimate_id}}",
+                "pdf"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Estimate",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              },
+              {
+                "key": "x-tenant-id",
+                "value": "{{tenant_id}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"clientId\": \"{{client_id}}\",\n  \"notes\": \"Estimate valid for 30 days.\",\n  \"items\": [\n    {\n      \"description\": \"Enterprise Server Installation\",\n      \"quantity\": 2,\n      \"unitPrice\": 2500.0,\n      \"taxRate\": 10.0\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/estimates",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "estimates"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.id) pm.environment.set(\"estimate_id\", res.id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Convert Estimate to Proforma Invoice",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              },
+              {
+                "key": "x-tenant-id",
+                "value": "{{tenant_id}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/estimates/{{estimate_id}}/convert-proforma",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "estimates",
+                "{{estimate_id}}",
+                "convert-proforma"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Convert Estimate to Tax Invoice",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              },
+              {
+                "key": "x-tenant-id",
+                "value": "{{tenant_id}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/estimates/{{estimate_id}}/convert-invoice",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "estimates",
+                "{{estimate_id}}",
+                "convert-invoice"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete Estimate",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              },
+              {
+                "key": "x-tenant-id",
+                "value": "{{tenant_id}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/estimates/{{estimate_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "estimates",
+                "{{estimate_id}}"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "08 - Mobile Proforma Invoices",
+      "item": [
+        {
+          "name": "List Proforma Invoices",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              },
+              {
+                "key": "x-tenant-id",
+                "value": "{{tenant_id}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/proforma",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "proforma"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (Array.isArray(res) && res.length > 0) pm.environment.set(\"proforma_id\", res[0].id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Proforma Invoice Details",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              },
+              {
+                "key": "x-tenant-id",
+                "value": "{{tenant_id}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/proforma/{{proforma_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "proforma",
+                "{{proforma_id}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Download / Open Proforma PDF",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              },
+              {
+                "key": "x-tenant-id",
+                "value": "{{tenant_id}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/proforma/{{proforma_id}}/pdf",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "proforma",
+                "{{proforma_id}}",
+                "pdf"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Proforma Invoice",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              },
+              {
+                "key": "x-tenant-id",
+                "value": "{{tenant_id}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"clientId\": \"{{client_id}}\",\n  \"notes\": \"Proforma Invoice for advance payment.\",\n  \"items\": [\n    {\n      \"description\": \"Air Freight Handling (Per Ton) - 2 Tons\",\n      \"quantity\": 2,\n      \"unitPrice\": 1250.0,\n      \"taxRate\": 5.0\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/proforma",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "proforma"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.id) pm.environment.set(\"proforma_id\", res.id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Convert Proforma to Tax Invoice",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              },
+              {
+                "key": "x-tenant-id",
+                "value": "{{tenant_id}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/proforma/{{proforma_id}}/convert-invoice",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "proforma",
+                "{{proforma_id}}",
+                "convert-invoice"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete Proforma Invoice",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              },
+              {
+                "key": "x-tenant-id",
+                "value": "{{tenant_id}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/proforma/{{proforma_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "proforma",
+                "{{proforma_id}}"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "09 - Mobile Tax Invoices",
+      "item": [
+        {
+          "name": "List Tax Invoices",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              },
+              {
+                "key": "x-tenant-id",
+                "value": "{{tenant_id}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/invoices",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "invoices"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (Array.isArray(res) && res.length > 0) pm.environment.set(\"invoice_id\", res[0].id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Invoice Details",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              },
+              {
+                "key": "x-tenant-id",
+                "value": "{{tenant_id}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/invoices/{{invoice_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "invoices",
+                "{{invoice_id}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Download / Open Invoice PDF",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              },
+              {
+                "key": "x-tenant-id",
+                "value": "{{tenant_id}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/invoices/{{invoice_id}}/pdf",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "invoices",
+                "{{invoice_id}}",
+                "pdf"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Tax Invoice",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              },
+              {
+                "key": "x-tenant-id",
+                "value": "{{tenant_id}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"clientId\": \"{{client_id}}\",\n  \"paymentMethod\": \"Bank Wire Transfer\",\n  \"notes\": \"Thank you for your business.\",\n  \"items\": [\n    {\n      \"description\": \"Heavy-Duty Wooden Pallets (10-Pack)\",\n      \"quantity\": 10,\n      \"unitPrice\": 180.0,\n      \"taxRate\": 8.0\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/invoices",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "invoices"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.id) pm.environment.set(\"invoice_id\", res.id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update Invoice Status",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              },
+              {
+                "key": "x-tenant-id",
+                "value": "{{tenant_id}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"PAID\",\n  \"paymentMethod\": \"Bank Wire Transfer\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/invoices/{{invoice_id}}/status",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "invoices",
+                "{{invoice_id}}",
+                "status"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete Tax Invoice",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              },
+              {
+                "key": "x-tenant-id",
+                "value": "{{tenant_id}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/invoices/{{invoice_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "invoices",
+                "{{invoice_id}}"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "10 - Mobile Purchase Orders",
+      "item": [
+        {
+          "name": "List Purchase Orders",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              },
+              {
+                "key": "x-tenant-id",
+                "value": "{{tenant_id}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/purchase-orders",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "purchase-orders"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (Array.isArray(res) && res.length > 0) pm.environment.set(\"po_id\", res[0].id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Purchase Order Details",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              },
+              {
+                "key": "x-tenant-id",
+                "value": "{{tenant_id}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/purchase-orders/{{po_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "purchase-orders",
+                "{{po_id}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Download / Open Purchase Order PDF",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              },
+              {
+                "key": "x-tenant-id",
+                "value": "{{tenant_id}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/purchase-orders/{{po_id}}/pdf",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "purchase-orders",
+                "{{po_id}}",
+                "pdf"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Purchase Order",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              },
+              {
+                "key": "x-tenant-id",
+                "value": "{{tenant_id}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"vendorId\": \"{{vendor_id}}\",\n  \"notes\": \"Deliver to Warehouse A, Bay 4.\",\n  \"items\": [\n    {\n      \"description\": \"Bulk Container Reservation\",\n      \"quantity\": 1,\n      \"unitPrice\": 5000.0,\n      \"taxRate\": 5.0\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/purchase-orders",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "purchase-orders"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.id) pm.environment.set(\"po_id\", res.id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update PO Status",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              },
+              {
+                "key": "x-tenant-id",
+                "value": "{{tenant_id}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"RECEIVED\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/purchase-orders/{{po_id}}/status",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "purchase-orders",
+                "{{po_id}}",
+                "status"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete Purchase Order",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              },
+              {
+                "key": "x-tenant-id",
+                "value": "{{tenant_id}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/purchase-orders/{{po_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "purchase-orders",
+                "{{po_id}}"
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
