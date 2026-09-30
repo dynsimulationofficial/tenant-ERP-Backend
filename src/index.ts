@@ -48,6 +48,10 @@ app.use('/api/invoices', invoiceRoutes);
 app.use('/api/purchase-orders', purchaseOrderRoutes);
 app.use('/api/mobile', mobileRoutes);
 
+// Root route aliases for convenience
+app.use('/auth', authRoutes);
+app.use('/mobile', mobileRoutes);
+
 app.get('/', (req, res) => {
   res.json({
     status: 'OK',

@@ -13,6 +13,7 @@ import { InvoiceModel } from '../models/invoiceModel';
 import { PurchaseOrderModel } from '../models/purchaseOrderModel';
 import { AuthRequest } from '../middleware/authMiddleware';
 import { generateTOTPSecret, generateQRCodeDataURL, verifyTOTPCode } from '../utils/totp';
+import { generatePDFStream } from '../utils/pdfGenerator.ts';
 import { Role } from '@prisma/client';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'tenant_erp_super_secret_jwt_key_2026';
@@ -22,6 +23,60 @@ const JWT_SECRET = process.env.JWT_SECRET || 'tenant_erp_super_secret_jwt_key_20
  * MOBILE AUTHENTICATION CONTROLLERS
  * ============================================================================
  */
+
+export async function mobileRegister(req: Request, res: Response) {
+  try {
+    const { companyName, name, email, password, currency } = req.body;
+
+    if (!companyName || !name || !email || !password) {
+      return res.status(400).json({ error: 'Company Name, User Name, Email, and Password are required' });
+    }
+
+    const existingUser = await UserModel.findByEmail(email);
+    if (existingUser) {
+      return res.status(400).json({ error: 'Email address is already registered' });
+    }
+
+    // 1. Create Tenant Company
+    const company = await CompanyModel.create({
+      name: companyName,
+      currency: currency || 'USD',
+    });
+
+    // 2. Hash Password & Create Admin User
+    const passwordHash = await bcrypt.hash(password, 10);
+    const user = await UserModel.create({
+      companyId: company.id,
+      name,
+      email,
+      passwordHash,
+      role: Role.ADMIN,
+    });
+
+    const token = jwt.sign(
+      {
+        userId: user.id,
+        email: user.email,
+        companyId: user.companyId,
+        role: user.role,
+      },
+      JWT_SECRET,
+      { expiresIn: '30d' }
+    );
+
+    const { passwordHash: _, twoFactorSecret: __, ...userWithoutPassword } = user;
+
+    res.status(201).json({
+      token,
+      tenantId: company.id,
+      user: userWithoutPassword,
+      company,
+      message: 'Tenant company workspace and admin user registered successfully',
+    });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+}
 
 export async function mobileLogin(req: Request, res: Response) {
   try {
@@ -885,6 +940,177 @@ export async function mobileDeletePurchaseOrder(req: AuthRequest, res: Response)
     const { id } = req.params;
     await PurchaseOrderModel.delete(id, companyId);
     res.json({ success: true });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+}
+
+/**
+ * ============================================================================
+ * MOBILE PDF GENERATION CONTROLLERS
+ * ============================================================================
+ */
+
+export async function mobileGetEstimatePDF(req: AuthRequest, res: Response) {
+  try {
+    const companyId = req.tenantId;
+    if (!companyId) return res.status(400).json({ error: 'Tenant context required' });
+    const { id } = req.params;
+
+    const estimate = await EstimateModel.findById(id, companyId);
+    if (!estimate) return res.status(404).json({ error: 'Estimate not found' });
+
+    generatePDFStream(
+      res,
+      {
+        title: 'ESTIMATE',
+        docNumber: estimate.estimateNumber,
+        issueDate: estimate.issueDate,
+        dueDate: estimate.expiryDate,
+        status: estimate.status,
+        currency: estimate.company.currency || 'USD',
+        company: estimate.company,
+        recipient: {
+          name: estimate.client.name,
+          contactPerson: estimate.client.contactPerson,
+          email: estimate.client.email,
+          phone: estimate.client.phone,
+          taxId: estimate.client.taxId,
+          address: estimate.client.billingAddress || estimate.client.shippingAddress,
+        },
+        recipientLabel: 'ESTIMATE FOR',
+        items: estimate.items,
+        subtotal: estimate.subtotal,
+        taxAmount: estimate.taxAmount,
+        totalAmount: estimate.totalAmount,
+        notes: estimate.notes,
+      },
+      `Estimate_${estimate.estimateNumber}`
+    );
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+}
+
+export async function mobileGetProformaPDF(req: AuthRequest, res: Response) {
+  try {
+    const companyId = req.tenantId;
+    if (!companyId) return res.status(400).json({ error: 'Tenant context required' });
+    const { id } = req.params;
+
+    const pi = await ProformaModel.findById(id, companyId);
+    if (!pi) return res.status(404).json({ error: 'Proforma Invoice not found' });
+
+    generatePDFStream(
+      res,
+      {
+        title: 'PROFORMA INVOICE',
+        docNumber: pi.piNumber,
+        issueDate: pi.issueDate,
+        dueDate: pi.dueDate,
+        status: pi.status,
+        currency: pi.company.currency || 'USD',
+        company: pi.company,
+        recipient: {
+          name: pi.client.name,
+          contactPerson: pi.client.contactPerson,
+          email: pi.client.email,
+          phone: pi.client.phone,
+          taxId: pi.client.taxId,
+          address: pi.client.billingAddress || pi.client.shippingAddress,
+        },
+        recipientLabel: 'PROFORMA FOR',
+        items: pi.items,
+        subtotal: pi.subtotal,
+        taxAmount: pi.taxAmount,
+        totalAmount: pi.totalAmount,
+        notes: pi.notes,
+      },
+      `Proforma_${pi.piNumber}`
+    );
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+}
+
+export async function mobileGetInvoicePDF(req: AuthRequest, res: Response) {
+  try {
+    const companyId = req.tenantId;
+    if (!companyId) return res.status(400).json({ error: 'Tenant context required' });
+    const { id } = req.params;
+
+    const invoice = await InvoiceModel.findById(id, companyId);
+    if (!invoice) return res.status(404).json({ error: 'Invoice not found' });
+
+    generatePDFStream(
+      res,
+      {
+        title: 'TAX INVOICE',
+        docNumber: invoice.invoiceNumber,
+        issueDate: invoice.issueDate,
+        dueDate: invoice.dueDate,
+        status: invoice.status,
+        currency: invoice.company.currency || 'USD',
+        company: invoice.company,
+        recipient: {
+          name: invoice.client.name,
+          contactPerson: invoice.client.contactPerson,
+          email: invoice.client.email,
+          phone: invoice.client.phone,
+          taxId: invoice.client.taxId,
+          address: invoice.client.billingAddress || invoice.client.shippingAddress,
+        },
+        recipientLabel: 'BILL TO',
+        items: invoice.items,
+        subtotal: invoice.subtotal,
+        taxAmount: invoice.taxAmount,
+        totalAmount: invoice.totalAmount,
+        notes: invoice.notes,
+        paymentMethod: invoice.paymentMethod,
+      },
+      `Invoice_${invoice.invoiceNumber}`
+    );
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+}
+
+export async function mobileGetPOPDF(req: AuthRequest, res: Response) {
+  try {
+    const companyId = req.tenantId;
+    if (!companyId) return res.status(400).json({ error: 'Tenant context required' });
+    const { id } = req.params;
+
+    const po = await PurchaseOrderModel.findById(id, companyId);
+    if (!po) return res.status(404).json({ error: 'Purchase Order not found' });
+
+    generatePDFStream(
+      res,
+      {
+        title: 'PURCHASE ORDER',
+        docNumber: po.poNumber,
+        issueDate: po.issueDate,
+        dueDate: po.expectedDate,
+        status: po.status,
+        currency: po.company.currency || 'USD',
+        company: po.company,
+        recipient: {
+          name: po.vendor.name,
+          contactPerson: po.vendor.contactPerson,
+          email: po.vendor.email,
+          phone: po.vendor.phone,
+          taxId: po.vendor.taxId,
+          address: po.vendor.address,
+        },
+        recipientLabel: 'VENDOR / SUPPLIER',
+        items: po.items,
+        subtotal: po.subtotal,
+        taxAmount: po.taxAmount,
+        totalAmount: po.totalAmount,
+        notes: po.notes,
+      },
+      `PurchaseOrder_${po.poNumber}`
+    );
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
